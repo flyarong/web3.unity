@@ -1,0 +1,53 @@
+﻿<linker>
+    <!--
+    This is required to avoid code stripping by Unity.
+    Types that are instantiated using DI (therefore reflection)
+    are not getting registered by the static code analyzer
+    
+    Also all default constructors are getting removed,
+    so DTO deserialization doesn't work.
+    -->
+    
+    <!--
+    TODO: would be great to have this automated,
+    possibly by using custom attributes and post-build link.xml generation
+    -->
+    
+    <!-- Our assemblies -->
+    <assembly fullname="ChainSafe.Gaming"/>
+    <assembly fullname="ChainSafe.Gaming.Unity"/>
+    <assembly fullname="ChainSafe.Gaming.InProcessSigner"/>
+    <assembly fullname="ChainSafe.Gaming.InProcessTransactionExecutor"/>
+    <assembly fullname="ChainSafe.Gaming.NetCore"/>
+    <assembly fullname="ChainSafe.Gaming.WalletConnect" preserve="all"/>
+    <assembly fullname="ChainSafe.Gaming.Gelato"/>
+    <assembly fullname="ChainSafe.Gaming.ChainLink"/>
+    <assembly fullname="ChainSafe.Gaming.LootBoxes.Chainlink"/>
+    <!-- Dependencies -->
+    <assembly fullname="ADRaffy.ENSNormalize" />
+    <assembly fullname="BouncyCastle.Crypto" />
+    <assembly fullname="Microsoft.Extensions.Logging.Abstractions" />
+    <assembly fullname="NBitcoin" />
+    <assembly fullname="Nethereum.ABI" />
+    <assembly fullname="Nethereum.Accounts" />
+    <assembly fullname="Nethereum.BlockchainProcessing" />
+    <assembly fullname="Nethereum.Contracts" />
+    <assembly fullname="Nethereum.Hex" />
+    <assembly fullname="Nethereum.JsonRpc.Client" />
+    <assembly fullname="Nethereum.JsonRpc.IpcClient" />
+    <assembly fullname="Nethereum.JsonRpc.RpcClient" />
+    <assembly fullname="Nethereum.KeyStore" />
+    <assembly fullname="Nethereum.Merkle" />
+    <assembly fullname="Nethereum.Merkle.Patricia" />
+    <assembly fullname="Nethereum.Model" />
+    <assembly fullname="Nethereum.RLP" />
+    <assembly fullname="Nethereum.RPC" />
+    <assembly fullname="Nethereum.Signer" />
+    <assembly fullname="Nethereum.Signer.EIP712" />
+    <assembly fullname="Nethereum.Util" />
+    <assembly fullname="Nethereum.Web3" />
+    <assembly fullname="Newtonsoft.Json" />
+    
+    <!-- Assemblies from UnityPackages -->
+    <assembly fullname="chainsafe.web3-unity"/>
+</linker>
