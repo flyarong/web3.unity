@@ -1,14 +1,11 @@
 name: NUnit Tests Workflow
 
 on:
-  workflow_run:
-    workflows: [ "Publish Solution Dependencies" ]
-    types:
-      - completed
+  workflow_call:
 
 jobs:
   check:
-    name: Web3 tests job 🕸️
+    name: Web3 tests 🕸️
     runs-on: ubuntu-latest
     strategy:
       matrix:

@@ -9,6 +9,7 @@ using ChainSafe.Gaming.Evm.Providers;
 using ChainSafe.Gaming.Evm.Signers;
 using ChainSafe.Gaming.Evm.Transactions;
 using ChainSafe.Gaming.Web3;
+using ChainSafe.Gaming.Web3.Analytics;
 using ChainSafe.Gaming.Web3.Core;
 using ChainSafe.Gaming.Web3.Core.Debug;
 using ChainSafe.Gaming.Web3.Environment;
@@ -27,7 +28,7 @@ namespace ChainSafe.Gaming.Lootboxes.Chainlink
         private readonly LootboxServiceConfig config;
         private readonly ISigner signer;
         private readonly IRpcProvider rpcProvider;
-        private readonly ILogWriter logWriter;
+        private readonly IAnalyticsClient analyticsClient;
 
         private Contract contract;
         private Dictionary<string, RewardType> rewardTypeByTokenAddress;
@@ -36,12 +37,12 @@ namespace ChainSafe.Gaming.Lootboxes.Chainlink
             LootboxServiceConfig config,
             IContractBuilder contractBuilder,
             IRpcProvider rpcProvider,
-            ILogWriter logWriter)
+            IAnalyticsClient analyticsClient)
         {
             this.rpcProvider = rpcProvider;
+            this.analyticsClient = analyticsClient;
             this.config = config;
             this.contractBuilder = contractBuilder;
-            this.logWriter = logWriter;
         }
 
         public LootboxService(
@@ -49,8 +50,8 @@ namespace ChainSafe.Gaming.Lootboxes.Chainlink
             IContractBuilder contractBuilder,
             IRpcProvider rpcProvider,
             ISigner signer,
-            ILogWriter logWriter)
-            : this(config, contractBuilder, rpcProvider, logWriter)
+            IAnalyticsClient analyticsClient)
+            : this(config, contractBuilder, rpcProvider, analyticsClient)
         {
             this.signer = signer;
         }
@@ -59,6 +60,12 @@ namespace ChainSafe.Gaming.Lootboxes.Chainlink
         {
             var contractAbi = this.config.ContractAbi.AssertNotNull(nameof(this.config.ContractAbi));
             var contractAddress = this.config.ContractAddress.AssertNotNull(nameof(this.config.ContractAddress));
+
+            analyticsClient.CaptureEvent(new AnalyticsEvent()
+            {
+                EventName = "Lootboxes Initialized",
+                PackageName = "io.chainsafe.web3-unity.lootboxes",
+            });
 
             // todo check if contract is correct
             this.contract = this.contractBuilder.Build(contractAbi, contractAddress);
@@ -106,7 +113,7 @@ namespace ChainSafe.Gaming.Lootboxes.Chainlink
 
         public async Task<uint> BalanceOf(uint lootboxType)
         {
-            var playerAddress = await this.GetCurrentPlayerAddress();
+            var playerAddress = this.GetCurrentPlayerAddress();
 
             return await this.BalanceOf(playerAddress, lootboxType);
         }
@@ -145,7 +152,7 @@ namespace ChainSafe.Gaming.Lootboxes.Chainlink
 
         public async Task<bool> IsOpeningLootbox()
         {
-            var playerAddress = await this.GetCurrentPlayerAddress();
+            var playerAddress = this.GetCurrentPlayerAddress();
             var response = await this.contract.Call("openerRequests", new object[] { playerAddress });
             var requests = (BigInteger)response[0];
             return requests > 0;
@@ -153,7 +160,7 @@ namespace ChainSafe.Gaming.Lootboxes.Chainlink
 
         public async Task<uint> OpeningLootboxType()
         {
-            var playerAddress = await this.GetCurrentPlayerAddress();
+            var playerAddress = this.GetCurrentPlayerAddress();
 
             // This response is actually very different from all the others since it returns several components
             var response = (List<ParameterOutput>)(await this.contract.Call("getOpenerRequestDetails", new object[] { playerAddress }))[0];
@@ -190,7 +197,7 @@ namespace ChainSafe.Gaming.Lootboxes.Chainlink
 
         public async Task<bool> CanClaimRewards()
         {
-            var playerAddress = await this.GetCurrentPlayerAddress();
+            var playerAddress = this.GetCurrentPlayerAddress();
 
             return await this.CanClaimRewards(playerAddress);
         }
@@ -207,7 +214,7 @@ namespace ChainSafe.Gaming.Lootboxes.Chainlink
 
         public async Task<LootboxRewards> ClaimRewards()
         {
-            var playerAddress = await this.GetCurrentPlayerAddress();
+            var playerAddress = this.GetCurrentPlayerAddress();
 
             return await this.ClaimRewards(playerAddress);
         }
@@ -278,14 +285,14 @@ namespace ChainSafe.Gaming.Lootboxes.Chainlink
             }
         }
 
-        private async Task<string> GetCurrentPlayerAddress()
+        private string GetCurrentPlayerAddress()
         {
             if (this.signer is null)
             {
                 throw new Web3Exception($"No {nameof(ISigner)} was registered. Can't get current user's address.");
             }
 
-            return await this.signer.GetAddress();
+            return signer.PublicAddress;
         }
     }
 }

@@ -1,0 +1,14 @@
+name: Duplicate Samples 🪞
+
+on:
+  workflow_call:
+  workflow_dispatch:
+      
+jobs:
+  setup:
+    name: Duplicate Samples 🪞
+    uses: ChainSafe/web3.unity/.github/workflows/setup.yaml@main
+    with:
+      arguments: "-d"
+    secrets: inherit
+    

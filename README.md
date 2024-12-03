@@ -4,14 +4,20 @@
 [<img alt="Discord" src="https://img.shields.io/discord/593655374469660673.svg?style=for-the-badge&label=Discord&logo=discord" height="20">](https://discord.gg/Q6A3YA2)
 [<img alt="Twitter" src="https://img.shields.io/twitter/follow/espadrine.svg?style=for-the-badge&label=Twitter&color=1DA1F2" height="20">](https://twitter.com/chainsafeth)
 
-## Notices
-
-After **June 15, 2023** all users of the SDK will be required to have their projects registered. Please ensure that you have a valid project ID to avoid any service interruptions by this time. If you need help getting a project ID, we've put together a tutorial to guide you through the process: https://docs.gaming.chainsafe.io/current/project-id-registration.
-
-As always, we're here to help, so feel free to message us in ⁠🕹web3unity-gaming-general  or ⁠🕹gaming-help if you're stuck and need help!
-
 ## Documentation
-https://docs.gaming.chainsafe.io/
+You can access the full docs at [docs.gaming.chainsafe.io](https://docs.gaming.chainsafe.io).
+
+Our codebase is quite easy to use. To immediately start with reading from the blockchain, once you've installed our core package,you can simply drag and drop our Web3Unity prefab to the scene and do the following
+
+```csharp
+async void Awake()
+{
+    await Web3Unity.Instance.Initialize(false);
+    var balance = await Web3Unity.Web3.Erc20.GetBalanceOf(contractAddress, accountAddress);   
+}
+```
+
+Additional prefab scripts can be found here [docs.gaming.chainsafe.io/current/sample-scripts](https://docs.gaming.chainsafe.io/current/sample-scripts).
 
 ## Support
 - Need help with web3.unity or found a bug? Be sure to read the documentation above, then review existing issues or create a new one [here](https://github.com/ChainSafe/web3.unity/issues). This is the best way to get help from the ChainSafe Gaming team.

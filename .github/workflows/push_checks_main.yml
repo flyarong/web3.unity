@@ -1,0 +1,15 @@
+name: Post Push Checks
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  sync_branches:
+    name: Sync Branches ♾️
+    uses: ChainSafe/web3.unity/.github/workflows/sync_branches.yaml@main
+    with:
+      base: main
+      target: dev
+      skip_ci: false
+    secrets: inherit

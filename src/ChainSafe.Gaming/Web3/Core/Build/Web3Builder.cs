@@ -2,7 +2,11 @@
 using System.Threading.Tasks;
 using ChainSafe.Gaming.Evm;
 using ChainSafe.Gaming.Evm.Contracts;
-using ChainSafe.Gaming.Web3.Core.Evm.EventPoller;
+using ChainSafe.Gaming.Evm.Contracts.BuiltIn;
+using ChainSafe.Gaming.LocalStorage;
+using ChainSafe.Gaming.Web3.Core;
+using ChainSafe.Gaming.Web3.Core.Chains;
+using ChainSafe.Gaming.Web3.Core.Logout;
 using ChainSafe.Gaming.Web3.Environment;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,18 +25,24 @@ namespace ChainSafe.Gaming.Web3.Build
 
             // Bind default services
             serviceCollection
-                .UseEventPoller()
+                .AddSingleton<IContractBuilder, ILifecycleParticipant, ContractBuilder>()
+                .AddSingleton<ILocalStorage, DataStorage>()
                 .AddSingleton<ChainRegistryProvider>()
-                .AddSingleton<IContractBuilder, ContractBuilder>();
+                .AddSingleton<ILogoutManager, LogoutManager>()
+                .AddSingleton<Erc20Service>()
+                .AddSingleton<Erc721Service>()
+                .AddSingleton<Erc1155Service>()
+                .AddSingleton<LifecycleManager>()
+                .AddChainManager();
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Web3Builder"/> class.
         /// </summary>
         /// <param name="projectConfig">Project config to use with the resulting Web3 instance.</param>
-        /// <param name="chainConfig">Chain config to use with the resulting Web3 instance.</param>
+        /// <param name="chainConfigSet">Chain config set to use with the resulting Web3 instance.</param>
         /// <exception cref="ArgumentException">One of the arguments is null.</exception>
-        public Web3Builder(IProjectConfig projectConfig, IChainConfig chainConfig)
+        public Web3Builder(IProjectConfig projectConfig, IChainConfigSet chainConfigSet)
             : this()
         {
             if (projectConfig == null)
@@ -40,13 +50,24 @@ namespace ChainSafe.Gaming.Web3.Build
                 throw new ArgumentNullException(nameof(projectConfig), $"{nameof(IProjectConfig)} is required for Web3 to work.");
             }
 
-            if (chainConfig == null)
+            if (chainConfigSet == null)
             {
-                throw new ArgumentNullException(nameof(chainConfig), $"{nameof(IChainConfig)} is required for Web3 to work.");
+                throw new ArgumentNullException(nameof(chainConfigSet), $"{nameof(IChainConfigSet)} is required for Web3 to work.");
             }
 
             serviceCollection.AddSingleton(projectConfig);
-            serviceCollection.AddSingleton(chainConfig);
+            serviceCollection.AddSingleton(chainConfigSet);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Web3Builder"/> class.
+        /// </summary>
+        /// <param name="projectConfig">Project config to use with the resulting Web3 instance.</param>
+        /// <param name="chainConfigs">Chain configs to use with the resulting Web3 instance.</param>
+        /// <exception cref="ArgumentException">One of the arguments is null.</exception>
+        public Web3Builder(IProjectConfig projectConfig, params IChainConfig[] chainConfigs)
+            : this(projectConfig, new ChainConfigSet(chainConfigs))
+        {
         }
 
         /// <summary>
@@ -84,7 +105,7 @@ namespace ChainSafe.Gaming.Web3.Build
         /// Build <see cref="Web3"/> object using the settings provided by this Web3Builder object.
         /// </summary>
         /// <returns><see cref="Web3"/> object.</returns>
-        public async ValueTask<Web3> BuildAsync()
+        public async ValueTask<Web3> LaunchAsync()
         {
             var serviceProvider = serviceCollection.BuildServiceProvider();
             AssertWeb3EnvironmentBound(serviceProvider);
@@ -97,7 +118,6 @@ namespace ChainSafe.Gaming.Web3.Build
 
         private static void AssertWeb3EnvironmentBound(IServiceProvider serviceProvider)
         {
-            // TODO: test what happens when of environment components is not bound
             try
             {
                 serviceProvider.GetRequiredService<Web3Environment>();
@@ -105,7 +125,7 @@ namespace ChainSafe.Gaming.Web3.Build
             catch (InvalidOperationException e)
             {
                 var message = $"{nameof(Web3Environment)} is required for Web3 to work." +
-                              "Don't forget to bind it when building Web3.";
+                              "Don't forget to bind it when configuring your Web3 instance.";
                 throw new Web3BuildException(message, e);
             }
         }

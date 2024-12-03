@@ -1,0 +1,37 @@
+name: Sync Branches ♾️
+
+on:
+  workflow_call:
+    inputs:
+      base:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+      skip_ci:
+        type: boolean
+        default: true
+  workflow_dispatch:
+    inputs:
+      base:
+        required: true
+        description: "Base branch to Sync"
+        type: string
+      target:
+        required: true
+        description: "Target branch to Sync"
+        type: string
+      skip_ci:
+        required: true
+        description: "Should push skip CI"
+        type: boolean
+        default: true
+
+jobs:
+  setup:
+    name: Sync Branches ♾️
+    uses: ChainSafe/web3.unity/.github/workflows/setup.yaml@main
+    with:
+      arguments: "sync -b ${{ github.event.inputs.base || inputs.base }} -t ${{ github.event.inputs.target || inputs.target }} -s ${{ github.event.inputs.skip_ci || inputs.skip_ci }}"
+    secrets: inherit

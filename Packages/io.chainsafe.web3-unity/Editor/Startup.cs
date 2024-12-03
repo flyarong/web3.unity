@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using ChainSafe.Gaming.UnityPackage;
-using PlasticPipe.PlasticProtocol.Messages;
 
 namespace ChainSafe.GamingSdk.Editor
 {
@@ -28,16 +27,14 @@ namespace ChainSafe.GamingSdk.Editor
                     return;
                 }
 
+#if UNITY_WEBGL
                 var performSync = WebGLTemplateSync.CheckSyncStatus() switch
                 {
                     WebGLTemplateSyncStatus.UpToDate => false,
-
                     WebGLTemplateSyncStatus.DoesntExist =>
                         EditorUtility.DisplayDialog("web3.unity", "Do you wish to install the web3.unity WebGL templates into your project?", "Yes", "No"),
-
                     WebGLTemplateSyncStatus.OutOfDate =>
                         EditorUtility.DisplayDialog("web3.unity", "The web3.unity WebGL templates in your project are out of date, would you like to update now?", "Yes", "No"),
-
                     _ => false,
                 };
 
@@ -45,7 +42,9 @@ namespace ChainSafe.GamingSdk.Editor
                 {
                     WebGLTemplateSync.Syncronize();
                 }
+#endif
 
+                // Checks project ID
                 ValidateProjectID();
             };
         }
@@ -55,9 +54,9 @@ namespace ChainSafe.GamingSdk.Editor
             try
             {
                 var projectID = ProjectConfigUtilities.Load()?.ProjectId;
-                if (string.IsNullOrEmpty(projectID))
+                if (string.IsNullOrWhiteSpace(projectID))
                 {
-                    ChainSafeServerSettings.ShowWindow();
+                    Web3SettingsEditor.ShowWindow(Web3SettingsEditor.Tabs.Project);
                 }
             }
             catch (Exception e)

@@ -1,11 +1,12 @@
 #! /usr/bin/env sh
 scripts_dir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
-pushd "$scripts_dir"/../
 # clone submodules
 git submodule update --init
-popd
+
+pushd "$scripts_dir"/../Setup
 
 # publish DLLs to unity package
-source "$scripts_dir"/publish-to-unity-package.sh
+dotnet run -s -g false -c ${1:-Release}
 
+popd

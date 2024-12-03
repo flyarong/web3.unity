@@ -1,0 +1,24 @@
+name: Sync Dependencies 🔄
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      configuration:
+        required: true
+        description: 'Run Configuration'
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - Debug
+    
+jobs:
+  setup:
+    name: Sync Dependencies 🔄
+    uses: ChainSafe/web3.unity/.github/workflows/setup.yaml@main
+    with:
+      arguments: "-s"
+      configuration: ${{ github.event.inputs.configuration || 'Release' }}
+    secrets: inherit
+    
